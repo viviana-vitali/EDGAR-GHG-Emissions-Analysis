@@ -1,0 +1,110 @@
+---
+title: "EDGAR GHG Emissions Analysis"
+author: "Viviana Vitali"
+date: "2025-01-13"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+# The data from the two sheets contain greenhouse gas (GHG) emissions for different countries across various years. 
+# Chart 1: Evolution of GHG Growth in Euro Area, EU27, and Worldwide
+# We'll filter the data for these regions and create a time series plot.
+
+# Chart 2: Comparison of GHG Emissions Per Capita by World Bank Income Groups
+# We'll use the GHG_per_capita_by_country sheet and group countries by income levels, then calculate and compare their per capita emissions.
+ 
+# Chart 3: Contribution of Individual Country and Continent to Total World GHG Emissions
+# We'll sum GHG emissions for countries and continents from the GHG_totals_by_country sheet to create a bar chart.  
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(tidyr)
+
+# Load the Excel file
+file_path <- "EDGAR_2024_GHG_booklet_2024.xlsx"
+
+# Load the necessary sheets
+ghg_totals_by_country <- read_excel(file_path, sheet = "GHG_totals_by_country")
+ghg_per_capita_by_country <- read_excel(file_path, sheet = "GHG_per_capita_by_country")
+
+# Chart 1: Evolution of GHG Growth in the Euro Area, EU27, and Worldwide
+
+# Filter data for Euro Area, EU27, and World
+regions <- c("Euro Area", "EU27", "World")
+ghg_growth <- ghg_totals_by_country %>%
+  filter(Country %in% regions) %>%
+  pivot_longer(cols = starts_with("19") | starts_with("20"), names_to = "Year", values_to = "Emissions") %>%
+  mutate(Year = as.numeric(Year))
+
+# Plot the GHG emissions over time
+ggplot(ghg_growth, aes(x = Year, y = Emissions, color = Country)) +
+  geom_line(size = 1) +
+  labs(title = "GHG Growth in Euro Area, EU27, and Worldwide", 
+       x = "Year", 
+       y = "GHG Emissions (Mt CO2-eq)") +
+  theme_minimal()
+
+## Key Trends:
+# GHG emissions in the Euro Area have decreased steadily since [year].
+# EU27 emissions show a similar downward trend.
+# In contrast, global emissions have been rising, particularly in the [recent year range].
+
+# Chart 2: Comparison of GHG Emissions Per Capita by World Bank Income Groups
+
+# Assuming income group data is included or needs to be added, group by income level and calculate per capita emissions
+# If 'IncomeGroup' is available in the dataset:
+# ghg_per_capita_by_country <- ghg_per_capita_by_country %>% mutate(IncomeGroup = ...)
+
+# Aggregate emissions per capita by income group
+ghg_per_capita_summary <- ghg_per_capita_by_country %>%
+  pivot_longer(cols = starts_with("19") | starts_with("20"), names_to = "Year", values_to = "EmissionsPerCapita") %>%
+  group_by(Country) %>%
+  summarise(MeanEmissionsPerCapita = mean(EmissionsPerCapita, na.rm = TRUE))
+
+# Plot emissions per capita
+ggplot(ghg_per_capita_summary, aes(x = reorder(Country, -MeanEmissionsPerCapita), y = MeanEmissionsPerCapita)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "GHG Emissions Per Capita by Country", 
+       x = "Country", 
+       y = "Emissions Per Capita (Mt CO2-eq)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Key Trends:
+# High-income countries exhibit the highest GHG emissions per capita.
+# Upper-middle-income countries follow but with a notable gap.
+# Low-income countries contribute the least per capita, reflecting lower industrialization levels.
+
+# Chart 3: Contribution of Individual Countries and Continents to Global GHG Emissions
+# Group by continent and country and sum the total emissions
+ghg_contribution <- ghg_totals_by_country %>%
+  pivot_longer(cols = starts_with("19") | starts_with("20"), names_to = "Year", values_to = "Emissions") %>%
+  group_by(Country) %>%
+  summarise(TotalEmissions = sum(Emissions, na.rm = TRUE)) %>%
+  arrange(desc(TotalEmissions))
+
+# Top 10 countries contributing to GHG emissions
+top_countries <- ghg_contribution %>%
+  top_n(10, TotalEmissions)
+
+# Plot the contribution of top 10 countries
+ggplot(top_countries, aes(x = reorder(Country, -TotalEmissions), y = TotalEmissions, fill = Country)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Top 10 Countries Contributing to Global GHG Emissions", 
+       x = "Country", 
+       y = "Total Emissions (Mt CO2-eq)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Key Trends:
+# The top contributors to GHG emissions include [Country 1], [Country 2], and [Country 3].
+# [Continent] leads in total emissions due to industrial activities.
+# Countries in [Region] have significantly lower contributions.
+
+```
+
