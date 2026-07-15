@@ -13,7 +13,7 @@ The analysis addresses:
 ## Data source
 
 - EDGAR database: https://edgar.jrc.ec.europa.eu/
-- The data on income groups used for Chart2 is sourced from the [World Bank Country and Lending Groups](https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups), ensuring consistent and reliable measurements of global greenhouse gas emissions.
+- The data on income groups used for Chart 2 is sourced from the [World Bank Country and Lending Groups](https://datahelpdesk.worldbank.org/knowledgebase/articles/906519-world-bank-country-and-lending-groups), ensuring consistent and reliable measurements of global greenhouse gas emissions.
 
 ## Methodology
 
